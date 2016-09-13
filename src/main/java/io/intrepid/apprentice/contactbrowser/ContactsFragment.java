@@ -32,7 +32,8 @@ public class ContactsFragment extends Fragment implements
     ListView mContactsList;
 
     /* Cursor adapter and parameters */
-    private SimpleCursorAdapter mCursorAdapter;
+    private AlphabeticalAdapter mCursorAdapter;
+    private AlphabeticalAdapter mAlphabeticalAdapter;
 
     private final static String DISPLAY_NAME_FIELD =
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ?
@@ -59,8 +60,8 @@ public class ContactsFragment extends Fragment implements
     private static final int PROJECTION_INDEX_PHONE_NUMBER = 3;
 
     private static final String SELECTION =
-            DISPLAY_NAME_FIELD + " LIKE ? OR " +
-            ContactsContract.CommonDataKinds.Phone.NUMBER + " LIKE ? ";
+            DISPLAY_NAME_FIELD + " LIKE ? OR "
+            + ContactsContract.CommonDataKinds.Phone.NUMBER + " LIKE ? ";
 
     private String mSearchString = "";
 
@@ -88,7 +89,10 @@ public class ContactsFragment extends Fragment implements
         // List View with contacts
         mContactsList = (ListView) getActivity().findViewById(R.id.list_view_contacts);
 
-        mCursorAdapter = new SimpleCursorAdapter(
+        // mAlphabeticalAdapter(getActivity(), )
+
+//        mCursorAdapter = new SimpleCursorAdapter(
+        mCursorAdapter = new AlphabeticalAdapter(
                 getActivity(),
                 R.layout.list_item_contacts,
                 null,
@@ -115,7 +119,7 @@ public class ContactsFragment extends Fragment implements
                 ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                 PROJECTION, SELECTION,
                 mSelectionArgs,
-                null
+                DISPLAY_NAME_FIELD + "  ASC "
         );
     }
 
@@ -132,7 +136,7 @@ public class ContactsFragment extends Fragment implements
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         // Get data from the clicked contact
-        Cursor cursor = ((SimpleCursorAdapter) parent.getAdapter()).getCursor();
+        Cursor cursor = ((AlphabeticalAdapter) parent.getAdapter()).getCursor();
         cursor.moveToPosition(position);
         String phoneNumber = cursor.getString(PROJECTION_INDEX_PHONE_NUMBER);
 

@@ -32,7 +32,7 @@ public class ContactsFragment extends Fragment implements
     ListView mContactsList;
 
     /* Cursor adapter and parameters */
-    private AlphabeticalAdapter mCursorAdapter;
+    private Cursor mCursor;
     private AlphabeticalAdapter mAlphabeticalAdapter;
 
     private final static String DISPLAY_NAME_FIELD =
@@ -89,10 +89,8 @@ public class ContactsFragment extends Fragment implements
         // List View with contacts
         mContactsList = (ListView) getActivity().findViewById(R.id.list_view_contacts);
 
-        // mAlphabeticalAdapter(getActivity(), )
-
-//        mCursorAdapter = new SimpleCursorAdapter(
-        mCursorAdapter = new AlphabeticalAdapter(
+        // Alphabetical Adapter with indexer
+        mAlphabeticalAdapter = new AlphabeticalAdapter(
                 getActivity(),
                 R.layout.list_item_contacts,
                 null,
@@ -100,7 +98,7 @@ public class ContactsFragment extends Fragment implements
                 0
         );
 
-        mContactsList.setAdapter(mCursorAdapter);
+        mContactsList.setAdapter(mAlphabeticalAdapter);
 
         // Set the item click listener to be the current fragment
         mContactsList.setOnItemClickListener(this);
@@ -125,12 +123,16 @@ public class ContactsFragment extends Fragment implements
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        mCursorAdapter.swapCursor(data);
+        mAlphabeticalAdapter.swapCursor(data);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            mContactsList.setFastScrollAlwaysVisible(true);
+        }
+        mContactsList.setFastScrollEnabled(true);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        mCursorAdapter.swapCursor(null);
+        mAlphabeticalAdapter.swapCursor(null);
     }
 
     @Override

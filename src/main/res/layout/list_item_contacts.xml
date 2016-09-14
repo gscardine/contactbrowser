@@ -23,7 +23,7 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingRight="40dp"
         android:gravity="center_vertical"
         android:layout_alignParentRight="true">
     </TextView>

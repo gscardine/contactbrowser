@@ -1,1 +1,11 @@
+.gradle
+/local.properties
+.idea/
+.DS_Store
 /build
+signing.gradle 
+debug.keystore  
+*.iml
+*.ipl
+*.iws
+*.ipr

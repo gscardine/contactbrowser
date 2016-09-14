@@ -2,56 +2,55 @@ package io.intrepid.apprentice.contactbrowser;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.os.Build;
+import android.provider.ContactsContract;
 import android.support.v4.widget.SimpleCursorAdapter;
+import android.view.LayoutInflater;
+import android.widget.AlphabetIndexer;
 import android.widget.SectionIndexer;
 
-import java.util.HashMap;
-import java.util.Set;
-
 public class AlphabeticalAdapter extends SimpleCursorAdapter implements SectionIndexer {
-    private HashMap<String, Integer> alphabeticalIndexer;
-    private String[] sections;
 
-    private static final int PROJECTION_INDEX_DISPLAY_NAME = 2;
+    private AlphabetIndexer mAlphabeticalIndexer;
 
-
+    private final static String DISPLAY_NAME_FIELD =
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ?
+                    ContactsContract.Contacts.DISPLAY_NAME_PRIMARY :
+                    ContactsContract.Contacts.DISPLAY_NAME;
 
     public AlphabeticalAdapter(Context context, int layout, Cursor c, String[] from,
                                int[] to, int flags) {
         super(context, layout, c, from, to, flags);
+    }
 
-        // Map items by their first letter
-        alphabeticalIndexer = new HashMap<String, Integer>();
-
+    @Override
+    public Cursor swapCursor(Cursor c) {
+        // Create alphabetical indexer
         if (c != null) {
-            int count = c.getColumnCount();
-
-            for (int i = 0; i < count; i++) {
-                c.moveToPosition(i);
-                String letter = c.getString(PROJECTION_INDEX_DISPLAY_NAME).substring(0, 1).toUpperCase();
-                if (!alphabeticalIndexer.containsKey(letter)) {
-                    alphabeticalIndexer.put(letter, i);
-                }
-            }
-
-            // Sort letters list and transform it in String array
-            Set<String> sectionLetters = alphabeticalIndexer.keySet();
-            sections = (String[]) sectionLetters.toArray();
+            mAlphabeticalIndexer = new AlphabetIndexer(
+                    // Cursor
+                    c,
+                    // Column index
+                    c.getColumnIndex(DISPLAY_NAME_FIELD),
+                    // Alphabet
+                    " ABCDEFGHIJKLMNOPQRSTUVWXYZ");
         }
+
+        return super.swapCursor(c);
     }
 
     @Override
     public Object[] getSections() {
-        return sections;
+        return mAlphabeticalIndexer.getSections();
     }
 
     @Override
     public int getPositionForSection(int sectionIndex) {
-        return alphabeticalIndexer.get(sections[sectionIndex]);
+        return mAlphabeticalIndexer.getPositionForSection(sectionIndex);
     }
 
     @Override
     public int getSectionForPosition(int position) {
-        return 1;
+        return mAlphabeticalIndexer.getSectionForPosition(position);
     }
 }

@@ -11,10 +11,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,12 +26,9 @@ public class ContactsFragment extends Fragment implements
         LoaderCallbacks<Cursor>,
         AdapterView.OnItemClickListener, SearchView.OnQueryTextListener {
 
-    /* UI elements */
-    ListView mContactsList;
+    ListView ContactsListView;
 
-    /* Cursor adapter and parameters */
-    private Cursor mCursor;
-    private AlphabeticalAdapter mAlphabeticalAdapter;
+    private AlphabeticalAdapter alphabeticalAdapter;
 
     private final static String DISPLAY_NAME_FIELD =
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ?
@@ -50,7 +45,7 @@ public class ContactsFragment extends Fragment implements
             R.id.text_view_contact_phone
     };
 
-    private final static String[] PROJECTION = {
+    private final static String[] DATA_PROJECTION = {
             ContactsContract.Contacts._ID,
             ContactsContract.Contacts.LOOKUP_KEY,
             DISPLAY_NAME_FIELD,
@@ -59,22 +54,19 @@ public class ContactsFragment extends Fragment implements
 
     private static final int PROJECTION_INDEX_PHONE_NUMBER = 3;
 
-    private static final String SELECTION =
+    private static final String DATA_SELECTION =
             DISPLAY_NAME_FIELD + " LIKE ? OR "
             + ContactsContract.CommonDataKinds.Phone.NUMBER + " LIKE ? ";
 
-    private String mSearchString = "";
+    private String dataSearchString = "";
 
-    private String[] mSelectionArgs = { mSearchString, mSearchString };
+    private String[] dataSelectionArgs = { dataSearchString, dataSearchString };
 
-
-
+    private static final String DATA_ORDER = DISPLAY_NAME_FIELD + "  ASC ";
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        //return super.onCreateView(inflater, container, savedInstanceState);
-
         View rootView = inflater.inflate(R.layout.fragment_contacts, container, false);
         return rootView;
     }
@@ -87,10 +79,10 @@ public class ContactsFragment extends Fragment implements
         setHasOptionsMenu(true);
 
         // List View with contacts
-        mContactsList = (ListView) getActivity().findViewById(R.id.list_view_contacts);
+        ContactsListView = (ListView) getActivity().findViewById(R.id.list_view_contacts);
 
         // Alphabetical Adapter with indexer
-        mAlphabeticalAdapter = new AlphabeticalAdapter(
+        alphabeticalAdapter = new AlphabeticalAdapter(
                 getActivity(),
                 R.layout.list_item_contacts,
                 null,
@@ -98,10 +90,10 @@ public class ContactsFragment extends Fragment implements
                 0
         );
 
-        mContactsList.setAdapter(mAlphabeticalAdapter);
+        ContactsListView.setAdapter(alphabeticalAdapter);
 
         // Set the item click listener to be the current fragment
-        mContactsList.setOnItemClickListener(this);
+        ContactsListView.setOnItemClickListener(this);
 
         // Initialize the loader
         getLoaderManager().initLoader(0, null, this);
@@ -110,44 +102,77 @@ public class ContactsFragment extends Fragment implements
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         // Update cursor with the current string
-        mSelectionArgs[0] = mSelectionArgs[1] = "%" + mSearchString + "%";
+        dataSelectionArgs[0] = dataSelectionArgs[1] = "%" + dataSearchString + "%";
 
         return new CursorLoader(
                 getActivity(),
                 ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                PROJECTION, SELECTION,
-                mSelectionArgs,
-                DISPLAY_NAME_FIELD + "  ASC "
+                DATA_PROJECTION, DATA_SELECTION,
+                dataSelectionArgs,
+                DATA_ORDER
         );
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        mAlphabeticalAdapter.swapCursor(data);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            mContactsList.setFastScrollAlwaysVisible(true);
-        }
-        mContactsList.setFastScrollEnabled(true);
+        updateCursor(data);
+        enableListViewIndexedScroll();
     }
 
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        mAlphabeticalAdapter.swapCursor(null);
+    /**
+     * Replace cursor with new data
+     *
+     * @param newCursor New cursor
+     */
+    public void updateCursor(Cursor newCursor) {
+        alphabeticalAdapter.swapCursor(newCursor);
     }
 
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        // Get data from the clicked contact
-        Cursor cursor = ((AlphabeticalAdapter) parent.getAdapter()).getCursor();
-        cursor.moveToPosition(position);
-        String phoneNumber = cursor.getString(PROJECTION_INDEX_PHONE_NUMBER);
-
-        // Open phone app with number prefilled
+    /**
+     * Open phone app with number pre-filled
+     *
+     * @param phoneNumber
+     */
+    public void dialPhoneNumber(String phoneNumber) {
         Intent intent = new Intent(Intent.ACTION_DIAL);
         intent.setData(Uri.parse("tel:" + phoneNumber));
         if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
             startActivity(intent);
         }
+    }
+
+    /**
+     * Enable fast scroll, so that alphabetical index is displayed
+     */
+    public void enableListViewIndexedScroll() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            ContactsListView.setFastScrollAlwaysVisible(true);
+        }
+        ContactsListView.setFastScrollEnabled(true);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        alphabeticalAdapter.swapCursor(null);
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Cursor cursor = ((AlphabeticalAdapter) parent.getAdapter()).getCursor();
+
+        String phoneNumber = getContactPhoneNumber(cursor, position);
+        dialPhoneNumber(phoneNumber);
+    }
+
+    /**
+     * Get data from current contact
+     *
+     * @param cursor Current cursor
+     * @param position Position of currently selected contact
+     */
+    public String getContactPhoneNumber(Cursor cursor, int position) {
+        cursor.moveToPosition(position);
+        return cursor.getString(PROJECTION_INDEX_PHONE_NUMBER);
     }
 
     @Override
@@ -176,7 +201,7 @@ public class ContactsFragment extends Fragment implements
     @Override
     public boolean onQueryTextChange(String newText) {
         // Update search filter
-        mSearchString = !TextUtils.isEmpty(newText) ? newText : "";
+        dataSearchString = !TextUtils.isEmpty(newText) ? newText : "";
 
         // Restart loader to update cursor with the new search filter
         getLoaderManager().restartLoader(0, null, this);

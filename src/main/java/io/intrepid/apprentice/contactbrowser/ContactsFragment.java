@@ -26,10 +26,6 @@ public class ContactsFragment extends Fragment implements
         LoaderCallbacks<Cursor>,
         AdapterView.OnItemClickListener, SearchView.OnQueryTextListener {
 
-    ListView ContactsListView;
-
-    private AlphabeticalAdapter alphabeticalAdapter;
-
     private final static String DISPLAY_NAME_FIELD =
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ?
                     ContactsContract.Contacts.DISPLAY_NAME_PRIMARY :
@@ -52,17 +48,21 @@ public class ContactsFragment extends Fragment implements
             ContactsContract.CommonDataKinds.Phone.NUMBER
     };
 
-    private static final int PROJECTION_INDEX_PHONE_NUMBER = 3;
+    private final static int PROJECTION_INDEX_PHONE_NUMBER = 3;
 
-    private static final String DATA_SELECTION =
+    private final static String DATA_SELECTION =
             DISPLAY_NAME_FIELD + " LIKE ? OR "
             + ContactsContract.CommonDataKinds.Phone.NUMBER + " LIKE ? ";
+
+    private final static String DATA_ORDER = DISPLAY_NAME_FIELD + "  ASC ";
+
+    ListView ContactsListView;
+
+    private AlphabeticalAdapter alphabeticalAdapter;
 
     private String dataSearchString = "";
 
     private String[] dataSelectionArgs = { dataSearchString, dataSearchString };
-
-    private static final String DATA_ORDER = DISPLAY_NAME_FIELD + "  ASC ";
 
     @Nullable
     @Override

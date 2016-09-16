@@ -11,12 +11,12 @@ import android.widget.SectionIndexer;
 
 public class AlphabeticalAdapter extends SimpleCursorAdapter implements SectionIndexer {
 
-    private AlphabetIndexer mAlphabeticalIndexer;
-
     private final static String DISPLAY_NAME_FIELD =
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ?
                     ContactsContract.Contacts.DISPLAY_NAME_PRIMARY :
                     ContactsContract.Contacts.DISPLAY_NAME;
+
+    private AlphabetIndexer mAlphabeticalIndexer;
 
     public AlphabeticalAdapter(Context context, int layout, Cursor c, String[] from,
                                int[] to, int flags) {

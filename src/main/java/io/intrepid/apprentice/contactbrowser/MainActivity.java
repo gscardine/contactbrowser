@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (requestCode == PERMISSIONS_REQUEST_READ_CONTACTS) {
-            if (grantResults[0] == 1) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 displayContacts();
             }
         }

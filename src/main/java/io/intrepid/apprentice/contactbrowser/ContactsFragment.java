@@ -56,7 +56,7 @@ public class ContactsFragment extends Fragment implements
 
     private final static String DATA_ORDER = DISPLAY_NAME_FIELD + "  ASC ";
 
-    ListView ContactsListView;
+    ListView contactsListView;
 
     private AlphabeticalAdapter alphabeticalAdapter;
 
@@ -79,7 +79,7 @@ public class ContactsFragment extends Fragment implements
         setHasOptionsMenu(true);
 
         // List View with contacts
-        ContactsListView = (ListView) getActivity().findViewById(R.id.list_view_contacts);
+        contactsListView = (ListView) getActivity().findViewById(R.id.list_view_contacts);
 
         // Alphabetical Adapter with indexer
         alphabeticalAdapter = new AlphabeticalAdapter(
@@ -90,10 +90,10 @@ public class ContactsFragment extends Fragment implements
                 0
         );
 
-        ContactsListView.setAdapter(alphabeticalAdapter);
+        contactsListView.setAdapter(alphabeticalAdapter);
 
         // Set the item click listener to be the current fragment
-        ContactsListView.setOnItemClickListener(this);
+        contactsListView.setOnItemClickListener(this);
 
         // Initialize the loader
         getLoaderManager().initLoader(0, null, this);
@@ -148,9 +148,9 @@ public class ContactsFragment extends Fragment implements
      */
     public void enableListViewIndexedScroll() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            ContactsListView.setFastScrollAlwaysVisible(true);
+            contactsListView.setFastScrollAlwaysVisible(true);
         }
-        ContactsListView.setFastScrollEnabled(true);
+        contactsListView.setFastScrollEnabled(true);
     }
 
     @Override

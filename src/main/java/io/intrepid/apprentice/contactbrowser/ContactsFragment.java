@@ -102,7 +102,9 @@ public class ContactsFragment extends Fragment implements
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         // Update cursor with the current string
-        dataSelectionArgs[0] = dataSelectionArgs[1] = "%" + dataSearchString + "%";
+        String currentSearchParam = "%" + dataSearchString + "%";
+        dataSelectionArgs[0] = currentSearchParam;
+        dataSelectionArgs[1] = currentSearchParam;
 
         return new CursorLoader(
                 getActivity(),
